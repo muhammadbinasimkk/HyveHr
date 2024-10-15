@@ -38,12 +38,20 @@
       "loginHere": "Se connecter ici"
     },
     "navbar": {
-      "home": "Accueil",
-      "about": "À propos",
-      "contact": "Contact",
-      "login": "Connexion",
-      "register": "S'inscrire"
-    },
+    "settings": "Paramètres",
+    "help": "Aide",
+    "logout": "Se déconnecter",
+    "company": "Entreprise",
+    "employee": "Employé",
+    "recruitment": "Recrutement",
+    "compliance": "Conformité",
+    "benefits": "Avantages",
+    "leave": "Congé",
+    "learnDevelop": "Apprendre & Développer",
+    "performance": "Performance",
+    "expenses": "Dépenses",
+    "reports": "Rapports"
+  },
     "forgotPassword": {
       "title": "Mot de passe oublié",
       "email": "Adresse e-mail",

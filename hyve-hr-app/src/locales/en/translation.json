@@ -38,12 +38,20 @@
       "loginHere": "Log in here"
     },
     "navbar": {
-      "home": "Home",
-      "about": "About",
-      "contact": "Contact",
-      "login": "Login",
-      "register": "Register"
-    },
+    "settings": "Settings",
+    "help": "Help",
+    "logout": "Log Out",
+    "company": "Company",
+    "employee": "Employee",
+    "recruitment": "Recruitment",
+    "compliance": "Compliance",
+    "benefits": "Benefits",
+    "leave": "Leave",
+    "learnDevelop": "Learn & Develop",
+    "performance": "Performance",
+    "expenses": "Expenses",
+    "reports": "Reports"
+  },
     "forgotPassword": {
       "title": "Forgot Password",
       "email": "Email Address",

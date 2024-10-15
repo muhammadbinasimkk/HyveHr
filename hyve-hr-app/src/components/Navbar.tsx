@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next'; // Import useTranslation hook
@@ -7,9 +7,14 @@ import logo from '../assets/HHrLogo1.png';
 const Navbar: React.FC = () => {
   const { currentUser, logout } = useAuth(); // Access currentUser and logout from AuthContext
   const { t } = useTranslation(); // Use t function to access translations
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleLogout = () => {
     logout(); // Call the logout function to log the user out
+  };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev); // Toggle dropdown state
   };
 
   return (
@@ -20,15 +25,40 @@ const Navbar: React.FC = () => {
           <img
             src={logo} // Replace with your logo path
             alt="Logo"
-            className="h-8 w-8" // Adjust height and width of the logo as needed
+            className="h-8 w-16" // Adjust height and width of the logo as needed
           />
         </Link>
 
         {/* Right Side Menu Links */}
-        <div className="flex space-x-4 items-center">
-          <Link to="/settings" className="text-white hover:text-gray-400">
-            {t('navbar.settings')} {/* Translation for "Settings" */}
-          </Link>
+        <div className="flex space-x-4 items-center relative">
+          {/* Dropdown for Settings */}
+          <div className="relative">
+            <button
+              onClick={toggleDropdown}
+              className="text-white hover:text-gray-400 focus:outline-none"
+            >
+              {t('navbar.settings')} {/* Translation for "Settings" */}
+            </button>
+            {isDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2">
+                <Link
+                  to="/user-profile"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={() => setIsDropdownOpen(false)} // Close dropdown when clicked
+                >
+                  {t('settings.editUserProfile')}
+                </Link>
+                <Link
+                  to="/company-profile"
+                  className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  onClick={() => setIsDropdownOpen(false)} // Close dropdown when clicked
+                >
+                  {t('settings.editCompanyProfile')}
+                </Link>
+              </div>
+            )}
+          </div>
+
           <Link to="/help" className="text-white hover:text-gray-400">
             {t('navbar.help')} {/* Translation for "Help" */}
           </Link>

@@ -52,6 +52,10 @@
     "expenses": "Dépenses",
     "reports": "Rapports"
   },
+  "settings": {
+    "editUserProfile": "Modifier le profil utilisateur",
+    "editCompanyProfile": "Modifier le profil de l'entreprise"
+  },
     "forgotPassword": {
       "title": "Mot de passe oublié",
       "email": "Adresse e-mail",

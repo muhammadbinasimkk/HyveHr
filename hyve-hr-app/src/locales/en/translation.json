@@ -52,6 +52,10 @@
     "expenses": "Expenses",
     "reports": "Reports"
   },
+  "settings": {
+    "editUserProfile": "Edit User Profile",
+    "editCompanyProfile": "Edit Company Profile"
+  },
     "forgotPassword": {
       "title": "Forgot Password",
       "email": "Email Address",

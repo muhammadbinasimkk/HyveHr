@@ -1,0 +1,75 @@
+{
+    "login": {
+      "title": "Sign In",
+      "email": "Email Address",
+      "password": "Password",
+      "loginButton": "Login",
+      "loggingIn": "Logging in...",
+      "forgotPassword": "Forgot Password?",
+      "register": "Signup for an account",
+      "invalidEmail": "Invalid email address",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "invalidCredentials": "Invalid email or password"
+    },
+    "register": {
+      "title": "Register",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "companyName": "Company Name",
+      "email": "Work Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "registerButton": "Register",
+      "registering": "Registering...",
+      "firstNameRequired": "First Name is required",
+      "lastNameRequired": "Last Name is required",
+      "companyNameRequired": "Company Name is required",
+      "invalidEmail": "Invalid email address",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords must match",
+      "confirmPasswordRequired": "Please confirm your password",
+      "successMessage": "Registration successful! Please check your email to confirm your account.",
+      "registerFailed": "Failed to register",
+      "haveAccount": "Already have an account?",
+      "loginHere": "Log in here"
+    },
+    "navbar": {
+      "home": "Home",
+      "about": "About",
+      "contact": "Contact",
+      "login": "Login",
+      "register": "Register"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "email": "Email Address",
+      "sending": "Sending...",
+      "sendLink": "Send Reset Link",
+      "successMessage": "Check your email for password reset instructions.",
+      "failureMessage": "Failed to send reset email.",
+      "rememberPassword": "Remember your password?",
+      "loginHere": "Log in here"
+    },
+    "changePassword": {
+    "title": "Reset Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Reset Password",
+    "submitting": "Resetting Password...",
+    "passwordChanged": "Password changed successfully. Redirecting to login...",
+    "passwordMismatch": "Passwords must match",
+    "passwordRequired": "Password is required",
+    "passwordMin": "Password must be at least 6 characters",
+    "confirmPasswordRequired": "Please confirm your password",
+    "failureMessage": "Failed to reset password"
+  },
+    "confirmEmail": {
+      "title": "Confirm Your Email",
+      "message": "A confirmation email has been sent to your inbox. Please click on the link to confirm your account."
+    }
+  }
+  

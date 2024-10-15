@@ -4,6 +4,7 @@ import { useFormik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from 'react-i18next'; // Import useTranslation hook
 
 interface RegisterFormValues {
   firstName: string;
@@ -25,6 +26,7 @@ const Register: React.FC = () => {
     setShowConfirmPassword(!showConfirmPassword);
 
   const navigate = useNavigate();
+  const { t } = useTranslation(); // Use t function to access translations
 
   const initialValues: RegisterFormValues = {
     firstName: "",
@@ -36,18 +38,18 @@ const Register: React.FC = () => {
   };
 
   const validationSchema = Yup.object({
-    firstName: Yup.string().required("First Name is required"),
-    lastName: Yup.string().required("Last Name is required"),
-    companyName: Yup.string().required("Company Name is required"),
+    firstName: Yup.string().required(t('register.firstNameRequired')),
+    lastName: Yup.string().required(t('register.lastNameRequired')),
+    companyName: Yup.string().required(t('register.companyNameRequired')),
     email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
+      .email(t('register.invalidEmail'))
+      .required(t('register.emailRequired')),
     password: Yup.string()
-      .required("Password is required")
-      .min(6, "Password must be at least 6 characters"),
+      .required(t('register.passwordRequired'))
+      .min(6, t('register.passwordMin')),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords must match")
-      .required("Please confirm your password"),
+      .oneOf([Yup.ref("password")], t('register.passwordsMustMatch'))
+      .required(t('register.confirmPasswordRequired')),
   });
 
   const onSubmit = async (
@@ -61,16 +63,14 @@ const Register: React.FC = () => {
         values
       );
       if (response.status === 201) {
-        setMessage(
-          "Registration successful! Please check your email to confirm your account."
-        );
+        setMessage(t('register.successMessage'));
         setTimeout(() => {
           navigate("/confirm-email"); // Redirect to ConfirmEmail page after success
         }, 2000);
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
-      setError(error?.response?.data?.message || "Failed to register");
+      setError(error?.response?.data?.message || t('register.failureMessage'));
     } finally {
       setSubmitting(false); // Always reset submitting state
     }
@@ -84,13 +84,13 @@ const Register: React.FC = () => {
 
   return (
     <div className="flex font-tahoma items-center justify-center min-h-screen bg-[#fafafa] p-2">
-      <div className="gap-4 rounded-xl relative flex flex-col items-center justify-center w-full max-w-2xl p-4 bg-white shadow-lg shadow-[#f2f2f2] px-8 border-2 border-[#f2f2f2]" style={{ height: '600px' }}>
+      <div className="gap-4 rounded-xl relative flex flex-col items-center justify-center w-full max-w-2xl p-4 bg-white shadow-lg px-8 border-2 border-[#f2f2f2]" style={{ height: '600px' }}>
         <h1 className="text-3xl text-black mt-2 mb-4 text-center">
-          Register
+          {t('register.title')}
         </h1>
 
-      {/* Fixed container for error and message */}
-      <div className="flex flex-col justify-center items-center" style={{ minHeight: '20px' }}>
+        {/* Fixed container for error and message */}
+        <div className="flex flex-col justify-center items-center" style={{ minHeight: '20px' }}>
           {error && <p className="text-red-500">{error}</p>}
           {message && <p className="text-green-500">{message}</p>}
         </div>
@@ -105,7 +105,7 @@ const Register: React.FC = () => {
               htmlFor="firstName"
               className="block text-sm text-black"
             >
-              First Name
+              {t('register.firstName')}
             </label>
             <div className="flex items-center mb-2">
               <input
@@ -131,7 +131,7 @@ const Register: React.FC = () => {
               htmlFor="lastName"
               className="block text-sm text-black"
             >
-              Last Name
+              {t('register.lastName')}
             </label>
             <div className="flex items-center mb-2">
               <input
@@ -157,7 +157,7 @@ const Register: React.FC = () => {
               htmlFor="companyName"
               className="block text-sm text-black"
             >
-              Company Name
+              {t('register.companyName')}
             </label>
             <div className="flex items-center mb-2">
               <input
@@ -183,7 +183,7 @@ const Register: React.FC = () => {
               htmlFor="email"
               className="block text-sm text-black"
             >
-              Work Email
+              {t('register.email')}
             </label>
             <div className="flex items-center mb-2">
               <input
@@ -209,7 +209,7 @@ const Register: React.FC = () => {
               htmlFor="password"
               className="block text-sm text-black"
             >
-              Password
+              {t('register.password')}
             </label>
             <div className="flex items-center mb-2 relative">
               <input
@@ -246,7 +246,7 @@ const Register: React.FC = () => {
               htmlFor="confirmPassword"
               className="block text-sm text-black"
             >
-              Confirm Password
+              {t('register.confirmPassword')}
             </label>
             <div className="flex items-center mb-2 relative">
               <input
@@ -283,15 +283,15 @@ const Register: React.FC = () => {
               className="w-1/3 py-2 bg-green-500 text-black font-tahoma-semibold hover:bg-green-600 transition duration-300 rounded-sm"
               disabled={formik.isSubmitting}
             >
-              {formik.isSubmitting ? "Registering..." : "Register"}
+              {formik.isSubmitting ? t('register.registering') : t('register.registerButton')}
             </button>
           </div>
 
           <div className="col-span-2 mt-4 text-center">
             <p className="text-black">
-              Already have an account?{" "}
+              {t('register.haveAccount')}{" "}
               <Link to="/login" className="text-red-400 hover:underline">
-                Log in here
+                {t('register.loginHere')}
               </Link>
             </p>
           </div>

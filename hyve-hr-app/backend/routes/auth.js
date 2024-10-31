@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/db');
+const sql = require('../config/db'); // Using `mssql` now for SQL Server
 const sendEmail = require('../services/emailService'); // Now using Mailtrap with nodemailer
 const router = express.Router(); 
 
@@ -17,91 +17,100 @@ const generateRefreshToken = (user) => {
 // Store refresh tokens (In a real-world app, you might store these in the database)
 let refreshTokens = [];
 
-// Register a new user
+// Register a new user and company
 router.post('/register', async (req, res) => {
     const { firstName, lastName, companyName, email, password } = req.body;
 
     try {
-        // Check if the user already exists
-        db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-            if (err) return res.status(500).json({ message: 'Database error' });
-            if (results.length > 0) return res.status(400).json({ message: 'User already exists' });
+        // Existing user and company checks
+        const userResult = await sql.query`SELECT * FROM dbo.[User] WHERE Email = ${email}`;
+        if (userResult.recordset.length > 0) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
 
-            // Check if the company already exists
-            db.query('SELECT * FROM users WHERE company_name = ?', [companyName], async (err, companyResults) => {
-                if (err) return res.status(500).json({ message: 'Database error' });
+        let companyId;
+        const companyResult = await sql.query`SELECT ID FROM dbo.Company WHERE Name = ${companyName}`;
+        if (companyResult.recordset.length > 0) {
+            companyId = companyResult.recordset[0].ID;
+        } else {
+            const newCompanyResult = await sql.query`
+                INSERT INTO dbo.Company (Name, CreatedOn, State) 
+                OUTPUT INSERTED.ID 
+                VALUES (${companyName}, GETDATE(), 1)`;
+            
+            companyId = newCompanyResult.recordset[0].ID;
+        }
 
-                // Assign role based on whether the company exists or not
-                const role = companyResults.length > 0 ? 'User' : 'Owner';
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-                // Hash the password
-                const hashedPassword = await bcrypt.hash(password, 10);
+        await sql.query`
+            INSERT INTO dbo.[User] (FirstName, LastName, FullName, Email, CompanyId, Password, ModifiedOn, EmailConfirmToken, State)
+            VALUES (${firstName}, ${lastName}, ${firstName + ' ' + lastName}, ${email}, ${companyId}, ${hashedPassword}, GETDATE(), ${emailToken}, 0)
+        `;
 
-                // Generate email confirmation token
-                const emailToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        const confirmationUrl = `http://localhost:3000/confirm-email/${emailToken}`;
+        await sendEmail(
+            email,
+            'Confirm Your Registration',
+            `Click to confirm: ${confirmationUrl}`,
+            `<a href="${confirmationUrl}">Confirm</a>`
+        );
 
-                // Insert the new user into the database
-                db.query(
-                    'INSERT INTO users (first_name, last_name, company_name, email, password, email_confirm_token, role, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-                    [firstName, lastName, companyName, email, hashedPassword, emailToken, role],
-                    async (err) => {
-                        if (err) return res.status(500).json({ message: 'Failed to register user' });
-
-                        // Send confirmation email
-                        const confirmationUrl = `http://localhost:3000/confirm-email/${emailToken}`;
-                        await sendEmail(
-                            email,
-                            'Confirm Your Registration',
-                            `Click to confirm: ${confirmationUrl}`,
-                            `<a href="${confirmationUrl}">Confirm</a>`
-                        );
-
-                        // Respond with success message
-                        res.status(201).json({ message: 'User registered successfully. Check your email for confirmation.' });
-                    }
-                );
-            });
+        res.status(201).json({
+            message: 'User and company registered successfully. Check your email for confirmation.',
         });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
 
-// Confirm email
-router.get('/confirm-email/:token', (req, res) => {
+
+// Confirm email (update 'State' instead of 'EmailConfirmed')
+router.get('/confirm-email/:token', async (req, res) => {
     const { token } = req.params;
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) return res.status(400).json({ message: 'Invalid or expired token' });
-
-        db.query('UPDATE users SET email_confirmed = 1 WHERE email = ?', [decoded.email], (err) => {
-            if (err) return res.status(500).json({ message: 'Failed to confirm email' });
-            res.status(200).json({ message: 'Email confirmed successfully' });
-        });
-    });
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        await sql.query`UPDATE dbo.[User] SET State = 1 WHERE Email = ${decoded.email}`;
+        res.status(200).json({ message: 'Email confirmed successfully' });
+    } catch (err) {
+        return res.status(400).json({ message: 'Invalid or expired token' });
+    }
 });
 
-// Login user
-router.post('/login', (req, res) => {
+// Login user (check 'State' instead of 'EmailConfirmed')
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-        if (err) return res.status(500).json({ message: 'Database error' });
-        if (results.length === 0) return res.status(400).json({ message: 'Invalid email or password' });
+    try {
+        const result = await sql.query`SELECT * FROM dbo.[User] WHERE Email = ${email}`;
+        if (result.recordset.length === 0) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
 
-        const user = results[0];
-        const isMatch = await bcrypt.compare(password, user.password);
+        const user = result.recordset[0];
+        const isMatch = await bcrypt.compare(password, user.Password);
 
-        if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
-        if (!user.email_confirmed) return res.status(403).json({ message: 'Please confirm your email before logging in.' });
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid email or password' });
+        }
 
-        const accessToken = generateAccessToken({ id: user.id, email: user.email, role: user.role });
-        const refreshToken = generateRefreshToken({ id: user.id, email: user.email, role: user.role });
+        // Check if the user's email is confirmed (State == 1)
+        if (user.State === 0) {
+            return res.status(403).json({ message: 'Please confirm your email before logging in.' });
+        }
+
+        const accessToken = generateAccessToken({ id: user.ID, email: user.Email, role: user.Role });
+        const refreshToken = generateRefreshToken({ id: user.ID, email: user.Email, role: user.Role });
         refreshTokens.push(refreshToken);
 
-        res.json({ accessToken, refreshToken, user: { id: user.id, email: user.email, role: user.role } });
-    });
+        res.json({ accessToken, refreshToken, user: { id: user.ID, email: user.Email, role: user.Role } });
+    } catch (err) {
+        res.status(500).json({ message: 'Database error' });
+    }
 });
 
 // Token refresh
@@ -118,19 +127,21 @@ router.post('/token', (req, res) => {
 });
 
 // Forgot password
-router.post('/forgot-password', (req, res) => {
+router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
-    
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-        if (err || results.length === 0) return res.status(404).json({ message: 'User not found' });
 
-        const resetToken = jwt.sign({ id: results[0].id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    try {
+        const result = await sql.query`SELECT * FROM dbo.User WHERE Email = ${email}`;
+        if (result.recordset.length === 0) return res.status(404).json({ message: 'User not found' });
+
+        const resetToken = jwt.sign({ id: result.recordset[0].ID }, process.env.JWT_SECRET, { expiresIn: '1h' });
         const resetUrl = `http://localhost:3000/reset-password/${resetToken}`;
 
-        sendEmail(email, 'Password Reset', `Reset your password: ${resetUrl}`, `<a href="${resetUrl}">Reset Password</a>`)
-            .then(() => res.status(200).json({ message: 'Password reset email sent' }))
-            .catch((err) => res.status(500).json({ message: 'Failed to send reset email' }));
-    });
+        await sendEmail(email, 'Password Reset', `Reset your password: ${resetUrl}`, `<a href="${resetUrl}">Reset Password</a>`);
+        res.status(200).json({ message: 'Password reset email sent' });
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to send reset email' });
+    }
 });
 
 // Logout user
@@ -144,22 +155,17 @@ router.post('/logout', (req, res) => {
 router.post('/reset-password/:token', async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
-  
+
     try {
-        // Verify the token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      
-        // Hash the new password
         const hashedPassword = await bcrypt.hash(password, 10);
-  
-        // Update the user's password in the database
-        db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, decoded.id], (err) => {
-            if (err) return res.status(500).json({ message: 'Failed to update password' });
-            res.status(200).json({ message: 'Password reset successfully' });
-        });
+
+        await sql.query`UPDATE dbo.User SET Password = ${hashedPassword} WHERE ID = ${decoded.id}`;
+        res.status(200).json({ message: 'Password reset successfully' });
     } catch (error) {
         return res.status(400).json({ message: 'Invalid or expired token' });
     }
 });
+
 
 module.exports = router;

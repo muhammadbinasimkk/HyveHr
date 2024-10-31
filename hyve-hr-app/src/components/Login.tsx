@@ -92,7 +92,7 @@ const Login: React.FC = () => {
           <div className="col-span-2 mt-4 flex justify-center">
             <button
               type="submit"
-              className="w-1/3 py-2 bg-green-500 text-white hover:bg-green-600 transition duration-300 rounded-sm"
+              className="w-1/3 py-2 bg-[#14A44D] text-white hover:bg-green-700 transition duration-300 rounded-sm"
               disabled={formik.isSubmitting}
             >
               {formik.isSubmitting ? t('login.loggingIn') : t('login.loginButton')}

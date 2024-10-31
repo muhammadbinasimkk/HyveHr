@@ -17,7 +17,7 @@ const LanguageSelector: React.FC = () => {
         {/* Button to open the drop-up menu */}
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className="flex text-sm items-center py-2 px-4 bg-transparent text-black hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-300"
+          className="flex text-sm items-center p-2 bg-transparent text-white hover:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 transition duration-300"
         >
           {i18n.language === 'en' ? 'English' : 'Français'}
           <FaChevronUp className="ml-2" />

@@ -63,10 +63,13 @@ const Register: React.FC = () => {
         values
       );
       if (response.status === 201) {
-        setMessage(t('register.successMessage'));
-        setTimeout(() => {
-          navigate("/confirm-email"); // Redirect to ConfirmEmail page after success
-        }, 2000);
+        const { paymentUrl, sessionId } = response.data;
+  
+        // Redirect to the payment page with sessionId as a query parameter
+        navigate(`/payment?sessionId=${sessionId}`);
+  
+        // Or, alternatively, redirect directly to the Stripe checkout page:
+        // window.location.href = paymentUrl;
       }
     } catch (error: any) {
       console.error("Registration failed:", error);
@@ -75,6 +78,8 @@ const Register: React.FC = () => {
       setSubmitting(false); // Always reset submitting state
     }
   };
+  
+
 
   const formik = useFormik<RegisterFormValues>({
     initialValues,

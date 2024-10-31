@@ -12,6 +12,9 @@ import { AuthProvider } from './context/AuthContext';
 import LanguageSelector from './components/LanguageSelector'; // Language selector component
 import UserProfile from './components/UserProfile'; // Importing UserProfile component
 import CompanyProfile from './components/CompanyProfile'; // Importing CompanyProfile component
+import PaymentPage from './components/PaymentPage';
+import PaymentSuccess from './components/PaymentSuccess';
+import PaymentFailure from './components/PaymentFailure';
 
 const App: React.FC = () => {
   const { t } = useTranslation(); // Translation hook
@@ -30,6 +33,9 @@ const App: React.FC = () => {
             <Route path="/confirm-email/:token" element={<ConfirmEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ChangePassword />} />
+            <Route path="/payment" element={<PaymentPage />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
+      <Route path="/payment-failure" element={<PaymentFailure />} />
 
             {/* Protected Routes */}
             <Route
